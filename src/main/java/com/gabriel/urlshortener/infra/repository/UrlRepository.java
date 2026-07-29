@@ -11,7 +11,4 @@ public interface UrlRepository extends JpaRepository<Url, Long> {
     Optional<Url> findByShortUrl(String shortUrl);
     boolean existsByShortUrl(String shortUrl);
     void deleteByShortUrl(String shortUrl);
-    @Query("SELECT u.shortUrl FROM Url u")
-    List<String> findAllShortUrls();
-
 }

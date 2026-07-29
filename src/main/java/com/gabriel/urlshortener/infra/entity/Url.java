@@ -27,4 +27,11 @@ public class Url {
     private LocalDateTime dataCriacao;
     @Column(name="data_expiracao", nullable = false)
     private LocalDateTime dataExpiracao;
+
+    public Url(String originalUrl, String shortUrl, LocalDateTime dc, LocalDateTime de) {
+        this.originalUrl = originalUrl;
+        this.shortUrl = shortUrl;
+        this.dataCriacao = dc;
+        this.dataExpiracao = de;
+    }
 }

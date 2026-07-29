@@ -1,12 +1,14 @@
 package com.gabriel.urlshortener.business.Service;
 
+import com.gabriel.urlshortener.infra.dto.UrlRequestDto;
+import com.gabriel.urlshortener.infra.dto.UrlResponseDto;
 import com.gabriel.urlshortener.infra.entity.Url;
 import com.gabriel.urlshortener.infra.repository.UrlRepository;
 import com.gabriel.urlshortener.util.ShortUrlGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -14,17 +16,19 @@ import java.util.List;
 public class UrlService {
     private final UrlRepository urlRepository;
 
-    public List<String> criarShortUrl(String url){
+    public UrlResponseDto criarShortUrl(UrlRequestDto requestDto){
         ShortUrlGenerator gen = new ShortUrlGenerator();
         String shortUrl;
-        List<String> originalUrls = urlRepository.findAllShortUrls();
         while(true){
-            shortUrl = gen.gererate(6);
-            if(!originalUrls.contains(shortUrl)){
+            shortUrl = gen.generate(6);
+            if(!urlRepository.existsByShortUrl(shortUrl)){
                 break;
             }
         }
-        List<String> ans = List.of(url, "https://short.local/" + shortUrl);
-        return ans;
+        LocalDateTime now = LocalDateTime.now();
+        Url url = new Url(requestDto.originalUrl(), shortUrl, now, now.plusDays(30));
+        urlRepository.save(url);
+
+        return new UrlResponseDto(url.getOriginalUrl(), "https://short.local/" + url.getShortUrl());
     }
 }

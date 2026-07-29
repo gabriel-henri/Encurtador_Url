@@ -6,7 +6,7 @@ public class ShortUrlGenerator {
     private static final String possibilits = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
     private static final SecureRandom rand = new SecureRandom();
 
-    public String gererate(int len){
+    public String generate(int len){
         StringBuilder build = new StringBuilder();
 
         for(int i = 0; i < len; i++){
