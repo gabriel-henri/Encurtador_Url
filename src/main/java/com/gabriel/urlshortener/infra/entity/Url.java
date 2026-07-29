@@ -19,12 +19,12 @@ public class Url {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String original_url;
-    @Column(nullable = false, unique = true)
-    private String short_url;
-    @Column(nullable = false)
-    private LocalDateTime data_criacao;
-    @Column(nullable = false)
-    private LocalDateTime data_expiracao;
+    @Column(name="original_url", nullable = false)
+    private String originalUrl;
+    @Column(name="short_url", nullable = false, unique = true)
+    private String shortUrl;
+    @Column(name="data_criacao", nullable = false)
+    private LocalDateTime dataCriacao;
+    @Column(name="data_expiracao", nullable = false)
+    private LocalDateTime dataExpiracao;
 }
