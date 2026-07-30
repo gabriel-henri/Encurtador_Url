@@ -6,9 +6,13 @@ import com.gabriel.urlshortener.infra.entity.Url;
 import com.gabriel.urlshortener.infra.repository.UrlRepository;
 import com.gabriel.urlshortener.util.ShortUrlGenerator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -30,5 +34,23 @@ public class UrlService {
         urlRepository.save(url);
 
         return new UrlResponseDto(url.getOriginalUrl(), "https://short.local/" + url.getShortUrl());
+    }
+
+    public List<UrlResponseDto> listarShortUrls(){
+        List<Url> urls = urlRepository.findAll();
+        List<UrlResponseDto> responses = new ArrayList<>();
+
+        for (Url url:
+             urls) {
+            responses.add(new UrlResponseDto(url.getOriginalUrl(), "https://short.local/" + url.getShortUrl()));
+        }
+        return responses;
+    }
+
+    @Transactional
+    public void deleteShortUrl(String req){
+        Url url = urlRepository.findByShortUrl(req)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        urlRepository.delete(url);
     }
 }
