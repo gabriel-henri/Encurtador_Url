@@ -2,15 +2,19 @@ package com.gabriel.urlshortener.business.Service;
 
 import com.gabriel.urlshortener.infra.dto.UrlRequestDto;
 import com.gabriel.urlshortener.infra.dto.UrlResponseDto;
+import com.gabriel.urlshortener.infra.entity.Click;
 import com.gabriel.urlshortener.infra.entity.Url;
+import com.gabriel.urlshortener.infra.repository.ClickRepository;
 import com.gabriel.urlshortener.infra.repository.UrlRepository;
 import com.gabriel.urlshortener.util.ShortUrlGenerator;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UrlService {
     private final UrlRepository urlRepository;
+    private final ClickRepository clickRepository;
 
     public UrlResponseDto criarShortUrl(UrlRequestDto requestDto){
         ShortUrlGenerator gen = new ShortUrlGenerator();
@@ -42,7 +47,8 @@ public class UrlService {
 
         for (Url url:
              urls) {
-            responses.add(new UrlResponseDto(url.getOriginalUrl(), "https://short.local/" + url.getShortUrl()));
+            if(LocalDateTime.now().isBefore(url.getDataExpiracao()))
+                responses.add(new UrlResponseDto(url.getOriginalUrl(), "https://short.local/" + url.getShortUrl()));
         }
         return responses;
     }
@@ -52,5 +58,20 @@ public class UrlService {
         Url url = urlRepository.findByShortUrl(req)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         urlRepository.delete(url);
+    }
+
+    @Transactional
+    public URI redirect(String shortCode, HttpServletRequest req){
+        Url url = urlRepository.findByShortUrl(shortCode).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
+        );
+        Click click = new Click();
+        click.setUrl(url);
+        click.setIp(req.getRemoteAddr());
+        click.setUserAgent(req.getHeader("User-Agent"));
+        click.setAcessedAt(LocalDateTime.now());
+
+        clickRepository.save(click);
+        return URI.create(url.getOriginalUrl());
     }
 }
